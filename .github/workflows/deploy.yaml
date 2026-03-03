@@ -101,4 +101,4 @@ jobs:
           GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN || github.token }}
         shell: sh
         run: |
-          gh api --verbose -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/integration-test.yml/enable"
+          gh api --verbose -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy.yaml/enable"
