@@ -88,3 +88,17 @@ jobs:
       #   with:
       #     role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
       #     aws-region: ${{ env.AWS_REGION }}
+
+
+  keepalive-job:
+    name: Keepalive Workflow
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+    steps:
+      - name: Re-enable workflow
+        env:
+          GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN || github.token }}
+        shell: sh
+        run: |
+          gh api --verbose -X PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/integration-test.yml/enable"
