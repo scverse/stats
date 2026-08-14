@@ -2,6 +2,7 @@ import "dotenv/config";
 import { collectGitHubStats } from "./collectors/gitHubCollector";
 import { collectZulipStats } from "./collectors/zulipCollector";
 import { collectBlueskyStats } from "./collectors/blueskyCollector";
+import { collectLinkedInStats } from "./collectors/linkedinCollector";
 import { collectEcosystemStats } from "./collectors/ecosystemCollector";
 import { collectCitationStats } from "./collectors/citationsCollector";
 import { collectPepyStats } from "./collectors/pepyCollector";
@@ -14,6 +15,7 @@ async function main() {
     collectGitHubStats(),
     collectZulipStats(),
     collectBlueskyStats(),
+    collectLinkedInStats(),
     collectEcosystemStats(),
     collectCitationStats(),
     collectPepyStats(),

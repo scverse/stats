@@ -38,6 +38,15 @@ export const BlueskyDataSchema = z.object({
 
 export type BlueskyData = z.infer<typeof BlueskyDataSchema>;
 
+// LinkedIn schemas
+export const LinkedInDataSchema = z.object({
+  followers_count: z.number(),
+  company: z.string(),
+  timestamp: z.string(),
+});
+
+export type LinkedInData = z.infer<typeof LinkedInDataSchema>;
+
 // Ecosystem packages schemas
 export const EcosystemPackageSchema = z.object({
   name: z.string(),
@@ -120,6 +129,7 @@ export type CitationsData = z.infer<typeof CitationsDataSchema>;
 export const CombinedStatsSchema = z.object({
   timestamp: z.string(),
   bluesky_followers: z.number().optional(),
+  linkedin_followers: z.number().optional(),
   zulip_users: z.number(),
   core_team_size: z.number(),
   github: z
