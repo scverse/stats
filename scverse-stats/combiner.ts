@@ -6,6 +6,7 @@ export async function combineStats(): Promise<void> {
   const githubData = await loadJson("github.json");
   const zulipData = await loadJson("zulip.json");
   const blueskyData = await loadJson("bluesky.json");
+  const linkedinData = await loadJson("linkedin.json");
   const ecosystemData = await loadJson("ecosystem.json");
   const citationsData = await loadJson("citations.json");
   const pepyData = await loadJson("pepy.json");
@@ -16,6 +17,10 @@ export async function combineStats(): Promise<void> {
 
   if (blueskyData) {
     combinedStats.bluesky_followers = blueskyData.followers_count;
+  }
+
+  if (linkedinData) {
+    combinedStats.linkedin_followers = linkedinData.followers_count;
   }
 
   if (zulipData) {
