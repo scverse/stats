@@ -10,7 +10,7 @@ on:
 
 env:
   AWS_REGION: eu-west-1
-  STATS_BUCKET: scverse-stats
+  STATS_BUCKET: scverse-stats-dev
 
 jobs:
   generate-data:
