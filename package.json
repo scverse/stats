@@ -21,7 +21,7 @@
     "chart.js": "^4.5.0",
     "chartjs-node-canvas": "^5.0.0",
     "dotenv": "^17.2.2",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.2",
     "zod": "^4.1.12",
     "zulip-js": "^2.1.0"
   },
