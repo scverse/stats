@@ -18,6 +18,23 @@ export const ZulipDataSchema = z.object({
 
 export type ZulipData = z.infer<typeof ZulipDataSchema>;
 
+export const ZulipActivityDaySchema = z.object({
+  date: z.string(),
+  total_users: z.number(),
+  active_users_15day: z.number(),
+  total_messages_read: z.number(),
+});
+
+export const ZulipActivityDataSchema = z.object({
+  total_users: z.number(),
+  active_users_15day: z.number(),
+  total_messages_read: z.number(),
+  days: z.array(ZulipActivityDaySchema),
+  timestamp: z.string(),
+});
+
+export type ZulipActivityData = z.infer<typeof ZulipActivityDataSchema>;
+
 // Bluesky schemas
 export const BlueskyProfileSchema = z.object({
   did: z.string(),
@@ -132,6 +149,8 @@ export const CombinedStatsSchema = z.object({
   linkedin_followers: z.number().optional(),
   zulip_users: z.number(),
   core_team_size: z.number(),
+  zulip_active_users_15day: z.number().optional(),
+  zulip_messages_read: z.number().optional(),
   github: z
     .object({
       total_repositories: z.number(),

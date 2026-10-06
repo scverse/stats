@@ -30,6 +30,7 @@ scverse-stats/
 ├── collectors/          # Individual data collectors
 │   ├── gitHubCollector.ts      # GitHub repos, stars, PRs, issues, contributors
 │   ├── zulipCollector.ts       # Zulip active users
+│   ├── zulipActivityCollector.ts # Zulip activity over time + chart
 │   ├── blueskyCollector.ts     # Bluesky followers
 │   ├── ecosystemCollector.ts   # Ecosystem packages
 │   └── citationsCollector.ts   # Citation counts
@@ -56,6 +57,8 @@ All data is saved to `output/` directory:
 
 - `github.json` - GitHub statistics
 - `zulip.json` - Zulip statistics
+- `zulip_activity.json` - Daily Zulip total users, active users (15-day window) and cumulative messages read, from the Zulip analytics API (same data as `<realm>/stats`)
+- `zulip_activity.png` - Chart of the above
 - `bluesky.json` - Bluesky statistics
 - `ecosystem.json` - Ecosystem packages
 - `citations.json` - Citation counts
