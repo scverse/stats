@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { collectGitHubStats } from "./collectors/gitHubCollector";
 import { collectZulipStats } from "./collectors/zulipCollector";
+import { collectZulipActivityStats } from "./collectors/zulipActivityCollector";
 import { collectBlueskyStats } from "./collectors/blueskyCollector";
 import { collectLinkedInStats } from "./collectors/linkedinCollector";
 import { collectEcosystemStats } from "./collectors/ecosystemCollector";
@@ -14,6 +15,7 @@ async function main() {
   await Promise.all([
     collectGitHubStats(),
     collectZulipStats(),
+    collectZulipActivityStats(),
     collectBlueskyStats(),
     collectLinkedInStats(),
     collectEcosystemStats(),

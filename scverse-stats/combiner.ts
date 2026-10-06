@@ -5,6 +5,7 @@ import { loadJson, saveJson } from "./utils";
 export async function combineStats(): Promise<void> {
   const githubData = await loadJson("github.json");
   const zulipData = await loadJson("zulip.json");
+  const zulipActivityData = await loadJson("zulip_activity.json");
   const blueskyData = await loadJson("bluesky.json");
   const linkedinData = await loadJson("linkedin.json");
   const ecosystemData = await loadJson("ecosystem.json");
@@ -26,6 +27,12 @@ export async function combineStats(): Promise<void> {
   if (zulipData) {
     combinedStats.zulip_users = zulipData.active_users;
     combinedStats.core_team_size = zulipData.core_team_size;
+  }
+
+  if (zulipActivityData) {
+    combinedStats.zulip_active_users_15day =
+      zulipActivityData.active_users_15day;
+    combinedStats.zulip_messages_read = zulipActivityData.total_messages_read;
   }
 
   if (githubData) {
