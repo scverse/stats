@@ -17,7 +17,22 @@ export async function collectPepyStats(): Promise<void> {
   const configPath = join(process.cwd(), "config", "config.yaml");
   const config = yaml.load(await fs.readFile(configPath, "utf8")) as {
     core_packages: string[];
+    // Extra PyPI projects whose downloads are added to a core package,
+    // e.g. rapids-singlecell: [rapids-singlecell-cu12, rapids-singlecell-cu13]
+    merged_projects?: Record<string, string[]>;
   };
+  const mergedProjects: Record<string, string[]> = {};
+  for (const [k, v] of Object.entries(config.merged_projects ?? {})) {
+    mergedProjects[normalizeName(k)] = v.map(normalizeName);
+  }
+  const memberToGroup = new Map<string, string>();
+  for (const [group, members] of Object.entries(mergedProjects)) {
+    for (const m of members) memberToGroup.set(m, group);
+  }
+  const projectsToFetch = config.core_packages.flatMap((pkg) => [
+    pkg,
+    ...(mergedProjects[normalizeName(pkg)] ?? []),
+  ]);
 
   const packages: any[] = [];
   const perPackage30DayAvg: {
@@ -36,7 +51,7 @@ export async function collectPepyStats(): Promise<void> {
   // PEPY free tier: 10 requests/minute -> wait 6s between requests
   const delayMs = 6000;
 
-  for (const pkg of config.core_packages) {
+  for (const pkg of projectsToFetch) {
     const project = normalizeName(pkg);
     const url = `${PEPY_BASE}/${encodeURIComponent(project)}`;
 
@@ -77,41 +92,9 @@ export async function collectPepyStats(): Promise<void> {
             downloads: body.downloads || {},
           });
 
-          // Compute last 30 days total (combine across versions)
-          const downloadsObj = validated.downloads || {};
-          const sortedDates = Object.keys(downloadsObj).sort().reverse();
-          const today = new Date();
-          let total30 = 0;
-          let countedDays = 0;
-
-          for (const dateStr of sortedDates) {
-            if (countedDays >= 30) break;
-            const d = new Date(dateStr + "T00:00:00Z");
-            const diffDays = Math.floor(
-              (today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24),
-            );
-            if (diffDays < 0) continue; // future date
-            if (diffDays >= 30) continue; // older than 30 days
-
-            const perVersion = downloadsObj[dateStr] || {};
-            const dayTotal = Object.values(perVersion).reduce(
-              (s: number, v: any) => s + (Number(v) || 0),
-              0,
-            );
-            total30 += dayTotal;
-            countedDays++;
-          }
-
-          const avgPerDay = countedDays > 0 ? total30 / countedDays : 0;
-          perPackage30DayAvg.push({
-            id: validated.id,
-            total_30_days: total30,
-            avg_per_day: avgPerDay,
-          });
-
           packages.push(validated);
           console.log(
-            `  ${project}: ${validated.total_downloads} downloads, 30-day avg ${avgPerDay.toFixed(1)}`,
+            `  ${project}: ${validated.total_downloads} downloads`,
           );
         } catch (err) {
           console.log(`  ${project}: validation failed`);
@@ -134,6 +117,69 @@ export async function collectPepyStats(): Promise<void> {
     }
 
     await sleep(delayMs);
+  }
+
+  // Fold merged projects (e.g. -cu12 / -cu13 builds) into their core package
+  const mergedPackages: any[] = [];
+  for (const p of packages) {
+    const group = memberToGroup.get(p.id);
+    if (!group) {
+      mergedPackages.push(p);
+      continue;
+    }
+    let target = mergedPackages.find((q) => q.id === group);
+    if (!target) {
+      target = { id: group, total_downloads: 0, versions: [], downloads: {} };
+      mergedPackages.push(target);
+    }
+  }
+  for (const p of packages) {
+    const group = memberToGroup.get(p.id);
+    const target = group
+      ? mergedPackages.find((q) => q.id === group)
+      : undefined;
+    if (!target || target === p) continue;
+    target.total_downloads += p.total_downloads || 0;
+    target.versions = Array.from(
+      new Set([...target.versions, ...(p.versions || [])]),
+    );
+    for (const [date, perVersion] of Object.entries(p.downloads || {})) {
+      const day = (target.downloads[date] ??= {});
+      for (const [ver, n] of Object.entries(perVersion as Record<string, number>)) {
+        day[ver] = (day[ver] || 0) + (Number(n) || 0);
+      }
+    }
+  }
+  packages.length = 0;
+  packages.push(...mergedPackages);
+
+  // Last-30-day totals per (merged) package
+  const today = new Date();
+  for (const pkg of packages) {
+    const downloadsObj = pkg.downloads || {};
+    const sortedDates = Object.keys(downloadsObj).sort().reverse();
+    let total30 = 0;
+    let countedDays = 0;
+    for (const dateStr of sortedDates) {
+      if (countedDays >= 30) break;
+      const d = new Date(dateStr + "T00:00:00Z");
+      const diffDays = Math.floor(
+        (today.getTime() - d.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      if (diffDays < 0) continue; // future date
+      if (diffDays >= 30) continue; // older than 30 days
+      const perVersion = downloadsObj[dateStr] || {};
+      total30 += Object.values(perVersion).reduce(
+        (s: number, v: any) => s + (Number(v) || 0),
+        0,
+      );
+      countedDays++;
+    }
+    perPackage30DayAvg.push({
+      id: pkg.id,
+      total_30_days: total30,
+      avg_per_day: countedDays > 0 ? total30 / countedDays : 0,
+    });
   }
 
   const total = packages.reduce((s, p) => s + (p.total_downloads || 0), 0);

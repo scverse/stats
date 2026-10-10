@@ -11,3 +11,10 @@ core_packages:
   - rapids_singlecell
   - pertpy
   - decoupler
+
+# PyPI projects that are builds of a core package; their pepy downloads are
+# summed into the core package's numbers.
+merged_projects:
+  rapids_singlecell:
+    - rapids_singlecell_cu12
+    - rapids_singlecell_cu13
