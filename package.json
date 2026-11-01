@@ -22,7 +22,7 @@
     "chartjs-node-canvas": "^5.0.0",
     "dotenv": "^17.2.2",
     "js-yaml": "^4.1.0",
-    "zod": "^4.1.12",
+    "zod": "^4.6.6",
     "zulip-js": "^2.1.0"
   },
   "devDependencies": {
